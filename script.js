@@ -1,123 +1,180 @@
-var currentGameMode = "NUMBER_OF_PLAYERS";
-var numberOfPlayers = 0;
-var numberOfDicesPerGame = 0;
-var player1 = " ";
-var player2 = " ";
-var player1Choices = [];
-var player2Choices = [];
-var tempWinner = [];
-var player1WinCount = 0;
-var player2WinCount = 0;
-var player1DiceNumbers = " ";
-var player2DiceNumbers = " ";
-
-var diceRoll = function () {
+var rollTheDice = function () {
   var randomDecimal = Math.random() * 6;
-  var randomInteger = Math.floor(randomDecimal);
-  var randomDiceNumber = randomInteger + 1;
-  return randomDiceNumber;
+  var diceNumber = Math.ceil(randomDecimal);
+  return diceNumber;
 };
 
-// Player 1 to roll 2 dices. Display the 2 dices.
-// Player 1 sees the number of the 2 dices.
-// Player 1 decides how he/she wants to arrange.
-// Player 1 inputs his/her decision.
-// Store the decision in an array.
-// Prompt Player 2 to roll the dice.
-// Repeat.
+// GAME_MODES
+var GAME_MODE_ENTER_NUM_PLAYERS = "ENTER_NUM_PLAYERS";
+var GAME_MODE_ENTER_NUM_DICE = "ENTER_NUM_DICE";
+var GAME_MODE_ROLL_THE_DICE = "ROLL_THE_DICE";
+var GAME_MODE_ENTER_INDEX_SEQUENCE = "ENTER_INDEX_SEQUENCE";
+var GAME_MODE_LEADERBOARD = "LEADERBOARD";
+var gameMode = GAME_MODE_ENTER_NUM_PLAYERS;
 
-var generateDiceNumbers = function () {
-  var diceOne = diceRoll();
-  var diceTwo = diceRoll();
-  var diceNumbers = [diceOne, diceTwo];
-  return diceNumbers;
+// GLOBAL_VARIABLES
+var currentPlayer = 1;
+var numberOfPlayers = 0;
+var numberOfDice = 0;
+var numberOfRounds_PlayedByEachPlayer = [];
+var numberOfWins_ByEachPlayer = [];
+var diceRollArray = []; // must be numbers
+var combinedNumberArray = [];
+
+var incrementNumberOfRoundsPlayedByEachPlayer = function () {
+  var currPlayerIndex = currentPlayer - 1;
+  numberOfRounds_PlayedByEachPlayer[currPlayerIndex] += 1;
 };
 
-var returnTempWinner = function () {
-  var player1latestnumber = player1Choices[player1Choices.length - 1];
-  var player2latestnumber = player2Choices[player2Choices.length - 1];
-  if (player1latestnumber > player2latestnumber) {
-    tempWinner.push(player1);
-    player1WinCount += 1;
-  } else if (player2latestnumber > player1latestnumber) {
-    tempWinner.push(player2);
-    player2WinCount += 1;
-  } else if (player2latestnumber == player1latestnumber) {
-    return `It is a draw!`;
+var incrementNumberOfWinsOfEachPlayer = function (returnIndexOfHighestNumber) {
+  numberOfWins_ByEachPlayer[returnIndexOfHighestNumber] += 1;
+};
+
+var generateDiceValues = function () {
+  var arrayOfDiceNumbers = [];
+  var diceCounter = 0;
+
+  while (diceCounter < numberOfDice) {
+    var diceNumber = Number(rollTheDice());
+    arrayOfDiceNumbers.push(diceNumber);
+    diceCounter += 1;
   }
-  return `${
-    tempWinner[tempWinner.length - 1]
-  } has won this round! Congratulations!`;
+
+  return arrayOfDiceNumbers; // this array is working fine.
 };
 
-var returnLeaderBoard = function () {
-  if (player1WinCount > player2WinCount) {
-    return `${player1} Win Count: ${player1WinCount}<br>${player2} Win Count: ${player2WinCount}`;
-  } else {
-    return `${player2} Win Count: ${player2WinCount}<br>${player1} Win Count: ${player1WinCount}`;
+var concatenanteRandomDigitNumbers = function (input) {
+  var splitArray = input.split("");
+  console.log(`User input index = ${splitArray}`);
+  var splitArrayOfNumbers = splitArray.map(Number);
+  var combinedNumber = [];
+
+  var diceCounter = 0;
+  while (diceCounter < numberOfDice) {
+    var arrayIndexNumber = splitArrayOfNumbers[diceCounter];
+    Number(arrayIndexNumber);
+    var preCombinedNumber = diceRollArray[arrayIndexNumber];
+    Number(preCombinedNumber);
+    combinedNumber.push(preCombinedNumber);
+    `Return final combined number based on user input of index = ${combinedNumber}`;
+    diceCounter += 1;
   }
+
+  return combinedNumber;
 };
 
-var generateDiceOrder = function (input) {
-  if (currentGameMode == "GAME_STAGE_1") {
-    if (input == player1DiceNumbers[0]) {
-      return `${input}${player1DiceNumbers[1]}`;
+var returnNumberAsInteger = function (combinedNumber) {
+  var integer = "";
+  var diceCounter = 0;
+
+  while (diceCounter < numberOfDice) {
+    integer = `${integer}${combinedNumber[diceCounter]}`;
+    diceCounter += 1;
+  }
+
+  return integer;
+};
+
+var indexOfMaxInArray = function (combinedNumberArrayNumber) {
+  if (combinedNumberArrayNumber.length == 0) {
+    return -1;
+  }
+
+  var max = combinedNumberArrayNumber[0];
+  var maxIndex = 0;
+
+  for (var i = 1; i < combinedNumberArrayNumber.length; i++) {
+    if (combinedNumberArrayNumber[i] > max) {
+      maxIndex = i;
+      max = combinedNumberArrayNumber[i];
     }
-    return `${input}${player1DiceNumbers[0]}`;
-  } else if (currentGameMode == "GAME_STAGE_3") {
-    if (input == player2DiceNumbers[0]) {
-      return `${input}${player2DiceNumbers[1]}`;
-    }
-    return `${input}${player2DiceNumbers[0]}`;
   }
+
+  return maxIndex;
 };
 
 var main = function (input) {
-  if (currentGameMode == "NUMBER_OF_PLAYERS") {
-    if (Number.isNaN(Number(input)) == true) {
-      return `Sorry, please enter the number of players.`;
-    }
+  if (gameMode == GAME_MODE_ENTER_NUM_PLAYERS) {
     numberOfPlayers = Number(input);
-    currentGameMode = "PLAYER_1_NAME";
-    return `You have selected ${numberOfPlayers} players.<br><br>Please enter Player 1's name.`;
-  } else if (currentGameMode == "PLAYER_1_NAME") {
-    player1 = input;
-    currentGameMode = "PLAYER_2_NAME";
-    return `Player 1: ${player1}<br><br>Now, please enter Player's 2 name.`;
-  } else if (currentGameMode == "PLAYER_2_NAME") {
-    player2 = input;
-    currentGameMode = "NUMBER_OF_DICES";
-    return `Player 1: ${player1}<br>Player 2: ${player2}.<br><br>Now, please enter the number of dices for this game.`;
-  } else if (currentGameMode == "NUMBER_OF_DICES") {
-    if (Number.isNaN(Number(input)) == true) {
-      return `Sorry, please enter the number of dices in this game.`;
-    }
-    numberOfDicesPerGame = Number(input);
-    currentGameMode = "START_GAME";
-    return `Welcome ${player1} & ${player2} to a game of Beat That!<br><br>Both of you have chosen ${numberOfDicesPerGame} dices for this game.<br><br>${player1}, please start by clicking "Submit" to roll the dice.`;
-  } else if (currentGameMode == "START_GAME") {
-    player1DiceNumbers = generateDiceNumbers();
-    currentGameMode = "GAME_STAGE_1";
-    return `Welcome ${player1}, you rolled:<br><br>Dice 1: ${player1DiceNumbers[0]}<br>Dice 2: ${player1DiceNumbers[1]}<br><br>Enter the largest number!`;
-  } else if (currentGameMode == "GAME_STAGE_1") {
-    var diceOrder = generateDiceOrder(input);
-    player1Choices.push(diceOrder);
-    currentGameMode = "GAME_STAGE_2";
-    return `Great! ${player1}, you have entered ${input} and your number is ${diceOrder}.<br><br>${player2}, please click "Submit" to roll the dice.`;
-  } else if (currentGameMode == "GAME_STAGE_2") {
-    player2DiceNumbers = generateDiceNumbers();
-    currentGameMode = "GAME_STAGE_3";
-    return `Welcome ${player2}, you rolled:<br><br>Dice 1: ${player2DiceNumbers[0]}<br>Dice 2: ${player2DiceNumbers[1]}<br><br>Enter the largest number!`;
-  } else if (currentGameMode == "GAME_STAGE_3") {
-    var diceOrder = generateDiceOrder(input);
-    player2Choices.push(diceOrder);
-    var nameOfTempWinner = returnTempWinner();
-    currentGameMode = "START_GAME";
-    var leaderboardOutput = returnLeaderBoard();
-    return `[Results]<br>${player1}, you have chosen number: ${
-      player1Choices[player1Choices.length - 1]
-    }.<br>${player2}, you have chosen number: ${
-      player2Choices[player2Choices.length - 1]
-    }<br><br>${nameOfTempWinner}<br><br>[LeaderBoard]<br>${leaderboardOutput}<br><br>${player1}, click "Submit" to roll the dice again!`;
+    numberOfRounds_PlayedByEachPlayer = Array(numberOfPlayers).fill(0);
+    numberOfWins_ByEachPlayer = Array(numberOfPlayers).fill(0);
+    gameMode = GAME_MODE_ENTER_NUM_DICE;
+    return `Welcome to Beat That! You have chosen to play with ${numberOfPlayers} players.<br><br>Player ${currentPlayer}, please enter the number of dice you want to roll.`;
   }
+
+  if (gameMode == GAME_MODE_ENTER_NUM_DICE) {
+    numberOfDice = Number(input);
+    gameMode = GAME_MODE_ROLL_THE_DICE;
+    return `Hi player ${currentPlayer}, you have chosen to roll ${numberOfDice} dice. Please click "SUBMIT" to start the game!`;
+  }
+
+  if (gameMode == GAME_MODE_ROLL_THE_DICE) {
+    console.log(`Current Player: ${currentPlayer}`);
+    incrementNumberOfRoundsPlayedByEachPlayer();
+    diceRollArray = generateDiceValues();
+    console.log(`Dice roll numbers = ${diceRollArray}`);
+    gameMode = GAME_MODE_ENTER_INDEX_SEQUENCE;
+    return `Hi player ${currentPlayer}:<br>Dice Roll Values: ${diceRollArray}.`;
+  }
+
+  if (gameMode == GAME_MODE_ENTER_INDEX_SEQUENCE) {
+    var combinedNumber = concatenanteRandomDigitNumbers(input);
+    var integer = Number(returnNumberAsInteger(combinedNumber));
+    console.log(`integer = ${integer}`);
+
+    combinedNumberArray.push(integer); // keep track of all players' combined numbers during that round
+    console.log(`Combined Number Array = ${combinedNumberArray}`);
+
+    var nextPlayer = (currentPlayer % numberOfPlayers) + 1;
+    console.log(`Next Player: Player ${nextPlayer}`);
+    console.log(`-------------------------------------`);
+
+    var outputMessage = `Hi player ${currentPlayer}, your number is ${integer}.`;
+
+    if (currentPlayer == numberOfPlayers) {
+      gameMode = GAME_MODE_LEADERBOARD;
+      return `${outputMessage} Please click on "Submit" to see who won!`;
+    }
+
+    currentPlayer = nextPlayer;
+    gameMode = GAME_MODE_ROLL_THE_DICE;
+    return `${outputMessage} Player ${currentPlayer}, please click "SUBMIT" to roll the dice!`;
+  }
+
+  if (gameMode == GAME_MODE_LEADERBOARD) {
+    var combinedNumberArrayNumber = combinedNumberArray.map(Number);
+    var returnIndexOfHighestNumber = Number(
+      indexOfMaxInArray(combinedNumberArrayNumber)
+    ); // Index of highest number + 1 = player
+
+    incrementNumberOfWinsOfEachPlayer(returnIndexOfHighestNumber);
+    console.log(`Winning array = ${numberOfWins_ByEachPlayer}`);
+    console.log(`Total rounds played = ${numberOfRounds_PlayedByEachPlayer}`);
+    console.log(
+      `-------------------------------------------------------------`
+    );
+
+    var myOutputMessage = generateOutputMessage();
+    currentPlayer = 1;
+    diceRollArray = [];
+    gameMode = GAME_MODE_ROLL_THE_DICE;
+    combinedNumberArray = [];
+    return `${myOutputMessage}<br>Click on "submit" button to start a new round!`;
+  }
+};
+
+var generateOutputMessage = function (input) {
+  var outputMessage = "";
+  var playerCounter = 0;
+
+  while (playerCounter < numberOfPlayers) {
+    var player = playerCounter + 1;
+    var winCount = numberOfWins_ByEachPlayer[playerCounter];
+    var lossCount =
+      numberOfRounds_PlayedByEachPlayer[playerCounter] -
+      numberOfWins_ByEachPlayer[playerCounter];
+    outputMessage = `${outputMessage}Player ${player}<br>Win count: ${winCount}<br>Lose count: ${lossCount}<br><br>`;
+    playerCounter += 1;
+  }
+  return outputMessage;
 };
